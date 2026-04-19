@@ -15,7 +15,13 @@ fn main() {
             .collect();
 
         println!("Request received: {:#?}", request);
-        let response = "HTTP/1.1 200 OK\r\n\r\nOlá Arquiteto";
+
+        let response = match request[0].as_str() {
+            "GET / HTTP/1.1" => "HTTP/1.1 200 OK\r\n\r\nOla",
+            "GET /about HTTP/1.1" => "HTTP/1.1 200 OK\r\n\r\nWill be added soon",
+            "GET /admin HTTP/1.1" => "HTTP/1.1 200 OK\r\n\r\nForbidden",
+            _ => "HTTP 1.1 404 NOT FOUND\r\n\r\n Route not found",
+        };
         stream.write_all(response.as_bytes()).unwrap();
     }
 }
