@@ -13,23 +13,29 @@ fn main() {
 
 fn handle_connection(mut stream: TcpStream) {
     let reader = BufReader::new(&mut stream);
-    let request: Vec<_> = reader
-        .lines()
-        .filter_map(|result| match result {
-            Ok(r) => Some(r),
+    let mut request = Vec::new();
+
+    for line in reader.lines() {
+        let line = match line {
+            Ok(line) => line,
             Err(e) => {
                 eprintln!("Error: {}", e);
-                None
+                return;
             }
-        })
-        .take_while(|line| !line.is_empty())
-        .collect();
+        };
 
-    if request.is_empty() {
-        return;
+        if line.is_empty() {
+            break;
+        }
+
+        request.push(line);
     }
 
-    let response = match request[0].as_str() {
+    let Some(first_line) = request.get(0) else {
+        return;
+    };
+
+    let response = match first_line.as_str() {
         "GET / HTTP/1.1" => "HTTP/1.1 200 OK\r\n\r\nHello",
         "GET /about HTTP/1.1" => "HTTP/1.1 200 OK\r\n\r\nSoon",
         _ => "HTTP/1.1 404 NOT FOUND\r\n\r\nNOT FOUND",
